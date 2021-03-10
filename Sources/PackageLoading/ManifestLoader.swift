@@ -209,15 +209,15 @@ public final class ManifestLoader: ManifestLoaderProtocol {
         swiftCompilerFlags: [String],
         identityResolver: IdentityResolver,
         diagnostics: DiagnosticsEngine? = nil,
+        fileSystem: FileSystem = localFileSystem,
         on queue: DispatchQueue,
         completion: @escaping (Result<Manifest, Error>) -> Void
     ) {
         do {
-            let fileSystem = localFileSystem
             let resources = try UserManifestResources(swiftCompiler: swiftCompiler, swiftCompilerFlags: swiftCompilerFlags)
             let loader = ManifestLoader(manifestResources: resources)
             let toolsVersion = try ToolsVersionLoader().load(at: path, fileSystem: fileSystem)
-            let packageLocation = path.basename == Manifest.filename ? path.parentDirectory : path
+            let packageLocation = fileSystem.isFile(path) ? path.parentDirectory : path
             let packageIdentity = identityResolver.resolveIdentity(for: packageLocation)
             loader.load(
                 at: path,

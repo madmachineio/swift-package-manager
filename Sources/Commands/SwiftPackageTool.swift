@@ -173,7 +173,7 @@ extension SwiftPackageTool {
             let rootManifests = try temp_await {
                 workspace.loadRootManifests(packages: root.packages, diagnostics: swiftTool.diagnostics, completion: $0)
             }
-            guard let rootManifest = rootManifests.first else {
+            guard let rootManifest = rootManifests.values.first else {
                 throw StringError("invalid manifests at \(root.packages)")
             }
 
@@ -243,7 +243,7 @@ extension SwiftPackageTool {
             let rootManifests = try temp_await {
                 workspace.loadRootManifests(packages: root.packages, diagnostics: swiftTool.diagnostics, completion: $0)
             }
-            guard let rootManifest = rootManifests.first else {
+            guard let rootManifest = rootManifests.values.first else {
                 throw StringError("invalid manifests at \(root.packages)")
             }
 
@@ -376,7 +376,7 @@ extension SwiftPackageTool {
             let rootManifests = try temp_await {
                 workspace.loadRootManifests(packages: root.packages, diagnostics: swiftTool.diagnostics, completion: $0)
             }
-            guard let rootManifest = rootManifests.first else {
+            guard let rootManifest = rootManifests.values.first else {
                 throw StringError("invalid manifests at \(root.packages)")
             }
 

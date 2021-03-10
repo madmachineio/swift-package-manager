@@ -80,12 +80,12 @@ class PackageGraphTests: XCTestCase {
             result.checkTarget("Baz") { result in result.check(dependencies: "Bar") }
         }
 
-        let fooPackage = try XCTUnwrap(g.packages.first{ $0.name == "Foo" })
+        let fooPackage = try XCTUnwrap(g.packages.first{ $0.manifestName == "Foo" })
         let fooTarget = try XCTUnwrap(g.allTargets.first{ $0.name == "Foo" })
         let fooDepTarget = try XCTUnwrap(g.allTargets.first{ $0.name == "FooDep" })
         XCTAssert(g.package(for: fooTarget) == fooPackage)
         XCTAssert(g.package(for: fooDepTarget) == fooPackage)
-        let barPackage = try XCTUnwrap(g.packages.first{ $0.name == "Bar" })
+        let barPackage = try XCTUnwrap(g.packages.first{ $0.manifestName == "Bar" })
         let barTarget = try XCTUnwrap(g.allTargets.first{ $0.name == "Bar" })
         XCTAssert(g.package(for: barTarget) == barPackage)
     }

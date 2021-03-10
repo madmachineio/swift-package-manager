@@ -556,7 +556,7 @@ extension Workspace {
         let rootManifests = try temp_await { self.loadRootManifests(packages: root.packages, diagnostics: diagnostics, completion: $0) }
 
         // Load the current manifests.
-        let graphRoot = try PackageGraphRoot(input: root, manifests: rootManifests)
+        let graphRoot = PackageGraphRoot(input: root, manifests: rootManifests)
         let currentManifests = try self.loadDependencyManifests(root: graphRoot, diagnostics: diagnostics)
 
         // Abort if we're unable to load the pinsStore or have any diagnostics.
@@ -739,11 +739,11 @@ extension Workspace {
     public func loadRootManifests(
         packages: [AbsolutePath],
         diagnostics: DiagnosticsEngine,
-        completion: @escaping(Result<[Manifest], Error>) -> Void
+        completion: @escaping(Result<[AbsolutePath: Manifest], Error>) -> Void
     ) {
         let lock = Lock()
         let sync = DispatchGroup()
-        var rootManifests = [Manifest]()
+        var rootManifests = [AbsolutePath: Manifest]()
         Set(packages).forEach { package in
             sync.enter()
             // TODO: this does not use the identity resolver which is probably fine since its the root packages
@@ -751,7 +751,7 @@ extension Workspace {
                 defer { sync.leave() }
                 if case .success(let manifest) = result {
                     lock.withLock {
-                        rootManifests.append(manifest)
+                        rootManifests[package] = manifest
                     }
                 }
             }
@@ -759,11 +759,11 @@ extension Workspace {
 
         sync.notify(queue: self.queue) {
             // Check for duplicate root packages.
-            let duplicateRoots = rootManifests.spm_findDuplicateElements(by: \.name)
+            let duplicateRoots = rootManifests.values.spm_findDuplicateElements(by: \.name)
             if !duplicateRoots.isEmpty {
                 let name = duplicateRoots[0][0].name
                 diagnostics.emit(error: "found multiple top-level packages named '\(name)'")
-                return completion(.success([]))
+                return completion(.success([:]))
             }
 
             completion(.success(rootManifests))
@@ -1103,7 +1103,7 @@ extension Workspace {
 
             var inputIdentities: Set<PackageReference> = []
             let inputNodes: [GraphLoadingNode] = self.root.packages.map{ identity, package in
-                inputIdentities.insert(package.packageReference)
+                inputIdentities.insert(package.reference)
                 let node = GraphLoadingNode(identity: identity, manifest: package.manifest, productFilter: .everything)
                 return node
             } + self.root.dependencies.compactMap{ dependency in
@@ -1554,14 +1554,14 @@ extension Workspace {
     }
 
     private func parseArtifacts(from manifests: DependencyManifests) throws -> (local: [ManagedArtifact], remote: [RemoteArtifact]) {
-        let packageAndManifests: [(manifest: Manifest, packageReference: PackageReference)] =
+        let packageAndManifests: [(reference: PackageReference, manifest: Manifest)] =
             manifests.root.packages.values + // Root package and manifests.
-            manifests.dependencies.map({ manifest, managed, _ in (manifest, managed.packageRef) }) // Dependency package and manifests.
+            manifests.dependencies.map({ manifest, managed, _ in (managed.packageRef, manifest) }) // Dependency package and manifests.
 
         var localArtifacts: [ManagedArtifact] = []
         var remoteArtifacts: [RemoteArtifact] = []
 
-        for (manifest, packageReference) in packageAndManifests {
+        for (packageReference, manifest) in packageAndManifests {
             for target in manifest.targets where target.type == .binary {
                 if let path = target.path {
                     // TODO: find a better way to get the base path (not via the manifest)
@@ -1782,7 +1782,7 @@ extension Workspace {
 
         // FIXME: this should not block
         let rootManifests = try temp_await { self.loadRootManifests(packages: root.packages, diagnostics: diagnostics, completion: $0) }
-        let graphRoot = try PackageGraphRoot(input: root, manifests: rootManifests, explicitProduct: explicitProduct)
+        let graphRoot = PackageGraphRoot(input: root, manifests: rootManifests, explicitProduct: explicitProduct)
 
         // Load the pins store or abort now.
         guard let pinsStore = diagnostics.wrap({ try self.pinsStore.load() }), !diagnostics.hasErrors else {
@@ -1827,7 +1827,7 @@ extension Workspace {
         // Save state for local packages, if any.
         //
         // FIXME: This will only work for top-level local packages right now.
-        for rootManifest in rootManifests {
+        for rootManifest in rootManifests.values {
             let dependencies = rootManifest.dependencies.filter{ $0.isLocal }
             for localPackage in dependencies {
                 let package = localPackage.createPackageRef()
@@ -1876,12 +1876,9 @@ extension Workspace {
         // FIXME: this should not block
         // Load the root manifests and currently checked out manifests.
         let rootManifests = try temp_await { self.loadRootManifests(packages: root.packages, diagnostics: diagnostics, completion: $0) }
-        guard !diagnostics.hasErrors else {
-            throw Diagnostics.fatalError
-        }
 
         // Load the current manifests.
-        let graphRoot = try PackageGraphRoot(input: root, manifests: rootManifests, explicitProduct: explicitProduct)
+        let graphRoot = PackageGraphRoot(input: root, manifests: rootManifests, explicitProduct: explicitProduct)
         let currentManifests = try self.loadDependencyManifests(root: graphRoot, diagnostics: diagnostics)
         guard !diagnostics.hasErrors else {
             return currentManifests

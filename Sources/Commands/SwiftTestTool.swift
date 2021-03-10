@@ -227,7 +227,7 @@ public struct SwiftTestTool: SwiftCommand {
             let rootManifests = try temp_await {
                 workspace.loadRootManifests(packages: root.packages, diagnostics: swiftTool.diagnostics, completion: $0)                
             }
-            guard let rootManifest = rootManifests.first else {
+            guard let rootManifest = rootManifests.values.first else {
                 throw StringError("invalid manifests at \(root.packages)")
             }
             let buildParameters = try swiftTool.buildParametersForTest()
@@ -360,7 +360,7 @@ public struct SwiftTestTool: SwiftCommand {
         let rootManifests = try temp_await {
             workspace.loadRootManifests(packages: root.packages, diagnostics: swiftTool.diagnostics, completion: $0)
         }
-        guard let rootManifest = rootManifests.first else {
+        guard let rootManifest = rootManifests.values.first else {
             throw StringError("invalid manifests at \(root.packages)")
         }
 

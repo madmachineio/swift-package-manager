@@ -35,7 +35,7 @@ extension PackageGraph {
     ) throws -> PackageGraph {
 
         // Create a map of the manifests, keyed by their identity.
-        let rootManifestsMap = root.packages.mapValues { $0.manifest }
+        let rootManifestsMap = root.manifests
         let externalManifestsMap = externalManifests.map{ (identityResolver.resolveIdentity(for: $0.packageLocation), $0) }
         let manifestMap = rootManifestsMap.merging(externalManifestsMap, uniquingKeysWith: { lhs, rhs in
             return lhs
@@ -55,13 +55,12 @@ extension PackageGraph {
             manifestMap[$0.identity]
         })
         let rootManifestNodes = root.packages.map { identity, package in
-            GraphLoadingNode(identity: identity,
-                             manifest: package.manifest,
-                             productFilter: .everything)
+            GraphLoadingNode(identity: identity, manifest: package.manifest, productFilter: .everything)
         }
         let rootDependencyNodes = root.dependencies.lazy.compactMap { (dependency: PackageDependencyDescription) -> GraphLoadingNode? in
-            guard let manifest = manifestMap[dependency.identity] else { return nil }
-            return GraphLoadingNode(identity: dependency.identity, manifest: manifest, productFilter: dependency.productFilter)
+            manifestMap[dependency.identity].map {
+                GraphLoadingNode(identity: dependency.identity, manifest: $0, productFilter: dependency.productFilter)
+            }
         }
         let inputManifests = rootManifestNodes + rootDependencyNodes
 
