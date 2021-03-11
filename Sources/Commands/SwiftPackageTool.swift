@@ -178,7 +178,7 @@ extension SwiftPackageTool {
             }
 
             let builder = PackageBuilder(
-                identity: .root(name: rootManifest.name),
+                identity: .plain(rootManifest.name),
                 manifest: rootManifest,
                 productFilter: .everything,
                 path: try swiftTool.getPackageRoot(),
@@ -248,7 +248,7 @@ extension SwiftPackageTool {
             }
 
             let builder = PackageBuilder(
-                identity: .root(name: rootManifest.name),
+                identity: .plain(rootManifest.name),
                 manifest: rootManifest,
                 productFilter: .everything,
                 path: try swiftTool.getPackageRoot(),

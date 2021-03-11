@@ -35,9 +35,9 @@ public struct PackageIdentity: Hashable, CustomStringConvertible {
     public let description: String
 
     /// Creates a package identity from a string.
-    /// - Parameter string: A string used to identify a package.
-    init(_ description: String) {
-        self.description = description
+    /// - Parameter value: A string used to identify a package.
+    init(_ value: String) {
+        self.description = value
     }
 
     /// Creates a package identity from a URL.
@@ -52,10 +52,10 @@ public struct PackageIdentity: Hashable, CustomStringConvertible {
         self.description = Self.provider.init(path.pathString).description
     }
 
-    /// Creates a package identity for a root package
-    /// - Parameter name: The name of the package, will be used unmodified
-    public static func root(name: String) -> PackageIdentity {
-        PackageIdentity(name)
+    /// Creates a plain package identity for a root package
+    /// - Parameter value: A string used to identify a package, will be used unmodified
+    public static func plain(_ value: String) -> PackageIdentity {
+        PackageIdentity(value)
     }
 }
 
