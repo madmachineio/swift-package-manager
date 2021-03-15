@@ -1935,7 +1935,7 @@ fileprivate extension Triple.OS {
     /// Returns a representation of the receiver that can be compared with platform strings declared in an XCFramework.
     var asXCFrameworkPlatformString: String? {
         switch self {
-        case .darwin, .linux, .wasi, .windows:
+        case .darwin, .linux, .wasi, .windows, .madmachine, .none:
             return nil // XCFrameworks do not support any of these platforms today.
         case .macOS:
             return "macos"
