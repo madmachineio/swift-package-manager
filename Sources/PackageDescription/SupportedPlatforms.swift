@@ -45,6 +45,10 @@ public struct Platform: Encodable, Equatable {
     /// The WebAssembly System Interface platform.
     @available(_PackageDescription, introduced: 5.3)
     public static let wasi: Platform = Platform(name: "wasi")
+
+    /// The MadMachine platform.
+    @available(_PackageDescription, introduced: 5.4)
+    public static let madmachine: Platform = Platform(name: "madmachine")
 }
 
 /// A platform that the Swift package supports.
