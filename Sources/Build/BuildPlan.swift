@@ -1945,6 +1945,6 @@ fileprivate extension Triple.OS {
 
 fileprivate extension Triple {
     var isSupportingStaticStdlib: Bool {
-        isLinux() || arch == .wasm32
+        isLinux() || arch == .wasm32 || isMadMachine()
     }
 }
