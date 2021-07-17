@@ -47,7 +47,7 @@ public struct Platform: Encodable, Equatable {
     public static let wasi: Platform = Platform(name: "wasi")
 
     /// The MadMachine platform.
-    @available(_PackageDescription, introduced: 5.4)
+    @available(_PackageDescription, introduced: 5.3)
     public static let madmachine: Platform = Platform(name: "madmachine")
 }
 
